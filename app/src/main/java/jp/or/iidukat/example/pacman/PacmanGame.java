@@ -12,15 +12,12 @@ import jp.or.iidukat.example.pacman.entity.PlayfieldActor.CurrentSpeed;
 import jp.or.iidukat.example.pacman.entity.Fruit;
 import jp.or.iidukat.example.pacman.entity.Ghost;
 import jp.or.iidukat.example.pacman.entity.Ghost.GhostMode;
-import jp.or.iidukat.example.pacman.entity.Level;
-import jp.or.iidukat.example.pacman.entity.Lives;
 import jp.or.iidukat.example.pacman.entity.Pacman;
 import jp.or.iidukat.example.pacman.entity.PacmanCanvas;
 import jp.or.iidukat.example.pacman.entity.Playfield;
 import jp.or.iidukat.example.pacman.entity.Playfield.Door;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement;
 import jp.or.iidukat.example.pacman.entity.Playfield.PathElement.Dot;
-import jp.or.iidukat.example.pacman.entity.Score;
 import jp.or.iidukat.example.pacman.entity.ScoreLabel;
 import jp.or.iidukat.example.pacman.entity.Sound;
 import android.content.Context;
@@ -60,6 +57,7 @@ public class PacmanGame {
     GameTimerManager gameTimerManager;
     CutsceneController cutsceneController;
     GhostModeController ghostModeController;
+    ChromeController chromeController;
 
     private boolean paused;
     private boolean started;
@@ -67,10 +65,10 @@ public class PacmanGame {
 
     PacmanCanvas canvasEl;
 
-    private long score;
+    long score;
     private boolean extraLifeAwarded;
     int lives = 3;
-    private int level = 0;
+    int level = 0;
     private int killScreenLevel = DEFAULT_KILL_SCREEN_LEVEL;
     LevelConfig levelConfig;
     private long globalTime = 0;
@@ -98,6 +96,7 @@ public class PacmanGame {
         gameTimerManager = new GameTimerManager(this);
         cutsceneController = new CutsceneController(this);
         ghostModeController = new GhostModeController(this);
+        chromeController = new ChromeController(this);
     }
 
     public double rand() {
@@ -193,7 +192,7 @@ public class PacmanGame {
     }
 
     private void newGame() {
-        createChrome();
+        chromeController.createChrome();
         createPlayfield();
         startGameplay();
     }
@@ -213,7 +212,7 @@ public class PacmanGame {
                 : LevelConfig.LEVEL_CONFIGS[level];
         ghostModeController.restartPenLeavingForNewLevel();
         lostLifeOnThisLevel = false;
-        updateChrome();
+        chromeController.updateChrome();
         resetPlayfield();
         restartGameplay(newGame);
         if (level == killScreenLevel) {
@@ -225,7 +224,7 @@ public class PacmanGame {
         lostLifeOnThisLevel = true;
         ghostModeController.restartPenLeavingForNewLife();
         lives--;
-        updateChromeLives();
+        chromeController.updateChromeLives();
 
         if (lives == -1) {
             changeGameplayMode(GameplayMode.GAMEOVER);
@@ -464,7 +463,7 @@ public class PacmanGame {
             soundManager.playTrack("start_music", 0, true);
             break;
         case NEWGAME_STARTED:
-            updateChromeLives();
+            chromeController.updateChromeLives();
             break;
         case GAMEOVER:
         case KILL_SCREEN:
@@ -501,20 +500,6 @@ public class PacmanGame {
         } else {
             soundManager.setPacManSound(true);
             playAmbientSound();
-        }
-    }
-
-    private void updateSoundIcon() {
-        Sound soundEl = getSoundEl();
-        if (soundManager.isAvailable()) {
-            soundEl.setVisibility(true);
-            if (soundManager.isPacManSound()) {
-                soundEl.turnOn();
-            } else {
-                soundEl.turnOff();
-            }
-        } else {
-            soundEl.setVisibility(false);
         }
     }
 
@@ -622,7 +607,7 @@ public class PacmanGame {
             cutsceneController.check();
             blinkScoreLabels();
         } else {
-            updateSoundIcon();
+            chromeController.updateSoundIcon();
 
             for (int i = 0; i < tickClock.tickMultiplier + latencyMultiplyer; i++) {
                 // run multiple time depending on the tickMultiplier and latency
@@ -652,7 +637,7 @@ public class PacmanGame {
         if (lives > 5) {
             lives = 5;
         }
-        updateChromeLives();
+        chromeController.updateChromeLives();
     }
 
     private void addToScore(int s) {
@@ -660,35 +645,7 @@ public class PacmanGame {
         if (!extraLifeAwarded && score > 10000) {
             extraLife();
         }
-        updateChromeScore();
-    }
-
-    private void updateChrome() {
-        updateChromeLevel();
-        updateChromeLives();
-        updateChromeScore();
-    }
-
-    private void updateChromeLives() {
-        getLivesEl().update(lives);
-    }
-
-    private void updateChromeLevel() {
-        getLevelEl().update(level, LevelConfig.LEVEL_CONFIGS);
-    }
-
-    private void updateChromeScore() {
-        getScoreEl().update(score);
-    }
-
-    private void createChrome() {
-        canvasEl.reset();
-        canvasEl.createScoreLabel();
-        canvasEl.createScore();
-        canvasEl.createLives();
-        canvasEl.createLevel();
-        canvasEl.createSoundIcon();
-        updateSoundIcon();
+        chromeController.updateChromeScore();
     }
 
     public void playAmbientSound() {
@@ -800,32 +757,11 @@ public class PacmanGame {
         return canvasEl.getScoreLabel();
     }
 
-    private Score getScoreEl() {
-        if (canvasEl == null) {
-            return null;
-        }
-        return canvasEl.getScore();
-    }
-
     Sound getSoundEl() {
         if (canvasEl == null) {
             return null;
         }
         return canvasEl.getSound();
-    }
-
-    private Lives getLivesEl() {
-        if (canvasEl == null) {
-            return null;
-        }
-        return canvasEl.getLives();
-    }
-    
-    private Level getLevelEl() {
-        if (canvasEl == null) {
-            return null;
-        }
-        return canvasEl.getLevel();
     }
 
     public Playfield getPlayfieldEl() {
