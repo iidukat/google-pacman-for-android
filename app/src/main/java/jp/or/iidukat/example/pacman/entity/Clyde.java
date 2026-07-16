@@ -71,6 +71,14 @@ public class Clyde extends Ghost {
     }
 
     @Override
+    void onGhostModeSwitched(GhostMode oldMode, GhostMode newMode) {
+        // Clyde entering or leaving the pen affects Blinky's cruise elroy speed.
+        if (newMode == GhostMode.IN_PEN || oldMode == GhostMode.IN_PEN) {
+            game.updateCruiseElroySpeed();
+        }
+    }
+
+    @Override
     MoveInPen[] getMovesInPen() {
         if (MOVES_IN_PEN.containsKey(mode)) {
             return MOVES_IN_PEN.get(mode);
