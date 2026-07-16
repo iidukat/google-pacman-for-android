@@ -67,27 +67,7 @@ class GhostModeController {
                 break;
             }
             for (Ghost ghost : ghosts) {
-                if (ghostMode != GhostMode.ENTERING_PEN && !justRestartGame) {
-                    ghost.setModeChangedWhileInPen(true);
-                }
-                if (ghostMode == GhostMode.FRIGHTENED) {
-                    ghost.setEatenInThisFrightMode(false);
-                }
-                if (!ghost.isEatenOrInPenCycle() || justRestartGame) {
-
-                    // If it is not immediately after restart the game (justRestartGame:false),
-                    // a ghost reverses its direction
-                    // when its mode changes from other than FRIGHTENED (CHASE or SCATTER) to another mode.
-                    if (!justRestartGame && ghost.getMode() != GhostMode.FRIGHTENED
-                            && ghost.getMode() != ghostMode) {
-                        ghost.setReverseDirectionsNext(true);
-                    }
-
-                    // If it is not immediately after restart the game
-                    // and a mode of each ghost is any of EATEN, IN_PEN, LEAVING_PEN, RE_LEAVING_FROM_PEN, or ENTERING_PEN,
-                    // it is not updated.
-                    ghost.switchGhostMode(ghostMode);
-                }
+                ghost.onMainGhostModeChanged(ghostMode, justRestartGame);
             }
 
             Pacman pacman = game.getPacman();
@@ -115,24 +95,12 @@ class GhostModeController {
                     alternatePenLeavingScheme = false;
                 }
             }
-        } else if (pinky.getMode() == GhostMode.IN_PEN
-                || pinky.getMode() == GhostMode.EATEN) {
-            pinky.incrementDotCount();
-            if (pinky.getDotCount() >= game.getLevelConfig().getPenLeavingLimits()[1]) {
-                pinky.setFreeToLeavePen(true);
-            }
-        } else if (inky.getMode() == GhostMode.IN_PEN
-                || inky.getMode() == GhostMode.EATEN) {
-            inky.incrementDotCount();
-            if (inky.getDotCount() >= game.getLevelConfig().getPenLeavingLimits()[2]) {
-                inky.setFreeToLeavePen(true);
-            }
-        } else if (clyde.getMode() == GhostMode.IN_PEN
-                || clyde.getMode() == GhostMode.EATEN) {
-            clyde.incrementDotCount();
-            if (clyde.getDotCount() >= game.getLevelConfig().getPenLeavingLimits()[3]) {
-                clyde.setFreeToLeavePen(true);
-            }
+        } else if (pinky.isWaitingInPen()) {
+            pinky.countDotForPenLeaving(game.getLevelConfig().getPenLeavingLimits()[1]);
+        } else if (inky.isWaitingInPen()) {
+            inky.countDotForPenLeaving(game.getLevelConfig().getPenLeavingLimits()[2]);
+        } else if (clyde.isWaitingInPen()) {
+            clyde.countDotForPenLeaving(game.getLevelConfig().getPenLeavingLimits()[3]);
         }
     }
 

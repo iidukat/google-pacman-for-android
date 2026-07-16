@@ -205,8 +205,10 @@ public abstract class PlayfieldActor extends Actor {
                 && game.getGameplayMode() != GameplayMode.KILL_SCREEN;
     }
     
-    public final int[] getTilePos() {
-        return tilePos;
+    // whether this actor occupies the same tile as the other actor
+    public final boolean occupiesSameTileAs(PlayfieldActor other) {
+        return this.tilePos[0] == other.tilePos[0]
+                && this.tilePos[1] == other.tilePos[1];
     }
 
     public final void setFullSpeed(double fullSpeed) {

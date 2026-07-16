@@ -71,6 +71,10 @@ public class Inky extends Ghost {
         if (pacman.dir == Direction.UP) {
             pacmanDest[1] -= 16;
         }
+        // The in-place update mirrors the original JS (pacman10-hp.js): when
+        // targetPos still aliases scatterPos (assigned on switching to SCATTER),
+        // this write also mutates scatterPos. Keep it to stay faithful to the
+        // original doodle's behavior.
         this.targetPos[0] = pacmanDest[0] * 2 - blinky.tilePos[0];
         this.targetPos[1] = pacmanDest[1] * 2 - blinky.tilePos[1];
     }
