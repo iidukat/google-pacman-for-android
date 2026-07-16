@@ -128,6 +128,32 @@ public abstract class Ghost extends PlayfieldActor {
         this.changeSpeed();
     }
     
+    // follow a switch of the main ghost mode (CHASE, SCATTER, or FRIGHTENED):
+    // a free ghost adopts it (reversing direction if needed);
+    // a penned ghost only records that the mode changed.
+    public final void followMainGhostMode(GhostMode newMainMode, boolean justRestartGame) {
+        if (newMainMode != GhostMode.ENTERING_PEN && !justRestartGame) {
+            this.modeChangedWhileInPen = true;
+        }
+        if (newMainMode == GhostMode.FRIGHTENED) {
+            this.eatenInThisFrightMode = false;
+        }
+        if (!isEatenOrInPenCycle() || justRestartGame) {
+            // If it is not immediately after restart the game (justRestartGame:false),
+            // a ghost reverses its direction
+            // when its mode changes from other than FRIGHTENED (CHASE or SCATTER) to another mode.
+            if (!justRestartGame && this.mode != GhostMode.FRIGHTENED
+                    && this.mode != newMainMode) {
+                this.reverseDirectionsNext = true;
+            }
+
+            // If it is not immediately after restart the game
+            // and a mode of the ghost is any of EATEN, IN_PEN, LEAVING_PEN, RE_LEAVING_FROM_PEN, or ENTERING_PEN,
+            // it is not updated.
+            switchGhostMode(newMainMode);
+        }
+    }
+
     // hook invoked whenever the ghost mode has switched (see Clyde)
     void onGhostModeSwitched(GhostMode oldMode, GhostMode newMode) {
     }
@@ -519,24 +545,23 @@ public abstract class Ghost extends PlayfieldActor {
         return eatenInThisFrightMode;
     }
 
-    public final void setEatenInThisFrightMode(boolean eatenInThisFrightMode) {
-        this.eatenInThisFrightMode = eatenInThisFrightMode;
-    }
-
     public final void setFreeToLeavePen(boolean freeToLeavePen) {
         this.freeToLeavePen = freeToLeavePen;
     }
 
-    public final void setModeChangedWhileInPen(boolean modeChangedWhileInPen) {
-        this.modeChangedWhileInPen = modeChangedWhileInPen;
+    // whether the ghost waits in the pen (or returns to it as eaten)
+    // counting dots until it may leave
+    public final boolean isWaitingInPen() {
+        return mode == GhostMode.IN_PEN || mode == GhostMode.EATEN;
     }
 
-    public final int getDotCount() {
-        return dotCount;
-    }
-
-    public final void incrementDotCount() {
-        this.dotCount++;
+    // count a dot toward the ghost's own pen-leaving limit;
+    // the ghost becomes free to leave the pen once the limit is reached
+    public final void countDotForPenLeaving(int limit) {
+        dotCount++;
+        if (dotCount >= limit) {
+            freeToLeavePen = true;
+        }
     }
     
     static double getDistance(int[] p1, int[] p2) {

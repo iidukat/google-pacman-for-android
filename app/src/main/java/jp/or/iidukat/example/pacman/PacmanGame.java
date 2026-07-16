@@ -326,8 +326,7 @@ public class PacmanGame {
         Pacman pacman = getPacman();
         Ghost[] ghosts = getGhosts();
         for (int i = 0; i < 4; i++) {
-            if (ghosts[i].getTilePos()[0] == pacman.getTilePos()[0]
-                    && ghosts[i].getTilePos()[1] == pacman.getTilePos()[1]) {
+            if (ghosts[i].occupiesSameTileAs(pacman)) {
                 if (ghosts[i].getMode() == GhostMode.FRIGHTENED) {
                     ghostDies(i);
                     return;
