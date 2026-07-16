@@ -128,12 +128,14 @@ public abstract class Ghost extends PlayfieldActor {
         this.changeSpeed();
     }
     
-    // react to a change of the main ghost mode
-    public final void onMainGhostModeChanged(GhostMode ghostMode, boolean justRestartGame) {
-        if (ghostMode != GhostMode.ENTERING_PEN && !justRestartGame) {
+    // follow a switch of the main ghost mode (CHASE, SCATTER, or FRIGHTENED):
+    // a free ghost adopts it (reversing direction if needed);
+    // a penned ghost only records that the mode changed.
+    public final void followMainGhostMode(GhostMode newMainMode, boolean justRestartGame) {
+        if (newMainMode != GhostMode.ENTERING_PEN && !justRestartGame) {
             this.modeChangedWhileInPen = true;
         }
-        if (ghostMode == GhostMode.FRIGHTENED) {
+        if (newMainMode == GhostMode.FRIGHTENED) {
             this.eatenInThisFrightMode = false;
         }
         if (!isEatenOrInPenCycle() || justRestartGame) {
@@ -141,14 +143,14 @@ public abstract class Ghost extends PlayfieldActor {
             // a ghost reverses its direction
             // when its mode changes from other than FRIGHTENED (CHASE or SCATTER) to another mode.
             if (!justRestartGame && this.mode != GhostMode.FRIGHTENED
-                    && this.mode != ghostMode) {
+                    && this.mode != newMainMode) {
                 this.reverseDirectionsNext = true;
             }
 
             // If it is not immediately after restart the game
             // and a mode of the ghost is any of EATEN, IN_PEN, LEAVING_PEN, RE_LEAVING_FROM_PEN, or ENTERING_PEN,
             // it is not updated.
-            switchGhostMode(ghostMode);
+            switchGhostMode(newMainMode);
         }
     }
 

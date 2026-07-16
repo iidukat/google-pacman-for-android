@@ -67,7 +67,7 @@ class GhostModeController {
                 break;
             }
             for (Ghost ghost : ghosts) {
-                ghost.onMainGhostModeChanged(ghostMode, justRestartGame);
+                ghost.followMainGhostMode(ghostMode, justRestartGame);
             }
 
             Pacman pacman = game.getPacman();
