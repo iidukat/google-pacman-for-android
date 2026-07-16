@@ -73,11 +73,7 @@ class GhostModeController {
                 if (ghostMode == GhostMode.FRIGHTENED) {
                     ghost.setEatenInThisFrightMode(false);
                 }
-                if (ghost.getMode() != GhostMode.EATEN
-                        && ghost.getMode() != GhostMode.IN_PEN
-                        && ghost.getMode() != GhostMode.LEAVING_PEN
-                        && ghost.getMode() != GhostMode.RE_LEAVING_FROM_PEN
-                        && ghost.getMode() != GhostMode.ENTERING_PEN || justRestartGame) {
+                if (!ghost.isEatenOrInPenCycle() || justRestartGame) {
 
                     // If it is not immediately after restart the game (justRestartGame:false),
                     // a ghost reverses its direction

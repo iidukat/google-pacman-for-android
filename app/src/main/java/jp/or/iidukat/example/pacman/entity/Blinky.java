@@ -59,6 +59,12 @@ public class Blinky extends Ghost {
     }
     
     @Override
+    boolean reLeavesPenImmediately() {
+        // Blinky goes out from the pen soon.
+        return true;
+    }
+
+    @Override
     MoveInPen[] getMovesInPen() {
         if (MOVES_IN_PEN.containsKey(mode)) {
             return MOVES_IN_PEN.get(mode);

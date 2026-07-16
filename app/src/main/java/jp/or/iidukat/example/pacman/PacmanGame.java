@@ -331,11 +331,7 @@ public class PacmanGame {
                 if (ghosts[i].getMode() == GhostMode.FRIGHTENED) {
                     ghostDies(i);
                     return;
-                } else if (ghosts[i].getMode() != GhostMode.EATEN
-                        && ghosts[i].getMode() != GhostMode.IN_PEN
-                        && ghosts[i].getMode() != GhostMode.LEAVING_PEN
-                        && ghosts[i].getMode() != GhostMode.RE_LEAVING_FROM_PEN
-                        && ghosts[i].getMode() != GhostMode.ENTERING_PEN) {
+                } else if (!ghosts[i].isEatenOrInPenCycle()) {
                     pacmanDies();
                 }
             }

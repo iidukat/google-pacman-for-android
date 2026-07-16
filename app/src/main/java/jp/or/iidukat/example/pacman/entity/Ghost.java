@@ -77,10 +77,7 @@ public abstract class Ghost extends PlayfieldActor {
     public final void switchGhostMode(GhostMode mode) {
         GhostMode oldMode = this.mode;
         this.mode = mode;
-        if (this == game.getClyde()
-                && (mode == GhostMode.IN_PEN || oldMode == GhostMode.IN_PEN)) {
-            game.updateCruiseElroySpeed();
-        }
+        onGhostModeSwitched(oldMode, mode);
         switch (oldMode) {
         case LEAVING_PEN:
             game.setGhostExitingPenNow(false);
@@ -131,6 +128,25 @@ public abstract class Ghost extends PlayfieldActor {
         this.changeSpeed();
     }
     
+    // hook invoked whenever the ghost mode has switched (see Clyde)
+    void onGhostModeSwitched(GhostMode oldMode, GhostMode newMode) {
+    }
+
+    // whether the ghost goes out of the pen again soon after entering it as eaten (see Blinky)
+    boolean reLeavesPenImmediately() {
+        return false;
+    }
+
+    // whether the ghost is eaten (returning to the pen as eyes)
+    // or somewhere in the pen cycle (in the pen, entering it, or leaving it)
+    public final boolean isEatenOrInPenCycle() {
+        return mode == GhostMode.EATEN
+                || mode == GhostMode.IN_PEN
+                || mode == GhostMode.LEAVING_PEN
+                || mode == GhostMode.RE_LEAVING_FROM_PEN
+                || mode == GhostMode.ENTERING_PEN;
+    }
+
     @Override
     public final void changeSpeed() {
         double s = 0;
@@ -250,8 +266,8 @@ public abstract class Ghost extends PlayfieldActor {
                 this.switchGhostMode(mainMode);
                 return;
             } else if (this.mode == GhostMode.ENTERING_PEN) { // After the ghost has been eaten, it enters the pen.
-                if (this == game.getBlinky() || this.freeToLeavePen) {
-                    this.switchGhostMode(GhostMode.RE_LEAVING_FROM_PEN); // Blinky goes out from the pen soon.
+                if (this.reLeavesPenImmediately() || this.freeToLeavePen) {
+                    this.switchGhostMode(GhostMode.RE_LEAVING_FROM_PEN);
                 } else {
                     this.eatenInThisFrightMode = true;
                     this.switchGhostMode(GhostMode.IN_PEN);
